@@ -12,7 +12,7 @@ def on_connect(client, userdata, flags, rc):
     print("Emaitza-kode honekin konektatuta: " + str(rc))
     client.subscribe("timer/#")
     print()
-    print("\"timer\" gaiari buruzko mezuak irakurtzen 2 minutuz...")
+    print("\"timer\" gaiari buruzko mezuak irakurtzen 3 minutuz...")
     print()
 
     konektatuta = True
