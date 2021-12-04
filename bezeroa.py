@@ -34,9 +34,9 @@ def konektatu_arte_itxaron():
         pass
 
 
-# 300 segundo (5 minutu) itxaron remote broker-etik deskonektatu eta programaren exekuzioa bukatu baino lehen
+# 180 segundo (3 minutu) itxaron remote broker-etik deskonektatu eta programaren exekuzioa bukatu baino lehen
 def konexioa_itxi():
-    time.sleep(300)
+    time.sleep(180)
 
     bezeroa.disconnect()
     bezeroa.loop_stop()
