@@ -1,15 +1,21 @@
 import paho.mqtt.client as mqtt
 import threading
+import time
 
-denbora = 0  # denbora kontrolatzeko erabiltzen den aldagai globala
+konektatuta = False
+denbora = 1
 
 
 def on_connect(client, userdata, flags, rc):
+    global konektatuta
+
     print("Emaitza-kode honekin konektatuta: " + str(rc))
     client.subscribe("timer/#")
     print()
-    print("\"timer\" gaiari buruzko mezuak irakurtzen...")
+    print("\"timer\" gaiari buruzko mezuak irakurtzen 2 minutuz...")
     print()
+
+    konektatuta = True
 
 
 # "timer" gaiko mezu bat jasotzen den bakoitzean, horren edukia pantailaratu
@@ -18,22 +24,31 @@ def on_message(client, userdata, msg):
 
 
 # bezeroa remote broker batera konektatu
-def bezeroaMartxanJarri():
+def bezeroa_martxan_jarri():
     bezeroa.connect("mqtt.eclipseprojects.io", 1883, 60)
-    bezeroa.loop_forever()
+    bezeroa.loop_start()
 
 
-def konektatuArteItxaron():
-    konektatuta = False
-
+def konektatu_arte_itxaron():
     while not konektatuta:
-        if bezeroa.is_connected():
-            konektatuta = True
+        pass
+
+
+# 300 segundo (5 minutu) itxaron remote broker-etik deskonektatu eta programaren exekuzioa bukatu baino lehen
+def konexioa_itxi():
+    time.sleep(300)
+
+    bezeroa.disconnect()
+    bezeroa.loop_stop()
+
+    print()
+    print("Agur!")
+    exit(0)
 
 
 # "timer/segundoak" gaiari bidali mezu bat segundo bat pasatzen den bakoitzean
 # minutu bakoitzero mezu bat bidaltzen da "timer/minutuak" gaiari ere
-def mezuakBidali():
+def mezuak_bidali():
     global denbora
 
     if bezeroa.is_connected():
@@ -43,10 +58,11 @@ def mezuakBidali():
             if denbora == 60:
                 bezeroa.publish("timer/minutuak", "minutu bat")
             else:
-                bezeroa.publish("timer/minutuak", str(int(denbora/60)) + " minutu")
+                bezeroa.publish("timer/minutuak", str(int(denbora / 60)) + " minutu")
 
         denbora += 1
-        threading.Timer(1.0, mezuakBidali).start()
+        time.sleep(1)
+        mezuak_bidali()
 
 
 # bezeroa konfiguratu
@@ -55,12 +71,15 @@ bezeroa.on_connect = on_connect  # bezeroarekin connect() metodoari deitu ostean
 bezeroa.on_message = on_message  # mezu bat jasotzen den bakoitzean ze metodori deitu behar zaion adierazten du
 
 # bezeroa martxan jarri hari batean
-bMJHaria = threading.Thread(target=bezeroaMartxanJarri)
+bMJHaria = threading.Thread(target=bezeroa_martxan_jarri)
 bMJHaria.start()
 
 # mezuak bidali baino lehen bezeroa remote broker-era konektatu arte itxaron
-konektatuArteItxaron()
+konektatu_arte_itxaron()
+
+# deskonexio-prozesua martxan jarri hari batean
+kIHaria = threading.Thread(target=konexioa_itxi)
+kIHaria.start()
 
 # mezuak bidali hari batean (bezeroa entzuten egonda modu paralelo batean mezuak bidali ahal izateko)
-mBHaria = threading.Thread(target=mezuakBidali)
-mBHaria.start()
+mezuak_bidali()
