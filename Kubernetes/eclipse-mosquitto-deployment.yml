@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eclipse-mosquitto
+  labels:
+    component: mosquitto
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: mosquitto
+  template:
+    metadata:
+      labels:
+        component: mosquitto
+    spec:
+      volumes:
+      - name: log-rvp-volumen
+        persistentVolumeClaim:
+          claimName: log-rvp
+      - name: mosquitto-config
+        configMap:
+          name: mosquitto-config
+      containers:
+      - name: eclipse-mosquitto
+        image: eclipse-mosquitto
+        ports:
+        - containerPort: 1883
+        - containerPort: 9001
+        volumeMounts:
+        - name: log-rvp-volumen
+          mountPath: /mosquitto/log
+        - name: mosquitto-config
+          mountPath: /mosquitto/config/mosquitto.conf
+          subPath: mosquitto.conf

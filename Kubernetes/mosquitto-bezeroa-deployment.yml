@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto-bezeroa
+  labels:
+    component: bezeroa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: bezeroa
+  template:
+    metadata:
+      labels:
+        component: bezeroa
+    spec:
+      containers:
+      - name: mosquitto-bezeroa
+        image: josuf6/mosquitto-bezeroa
+      restartPolicy: Always
