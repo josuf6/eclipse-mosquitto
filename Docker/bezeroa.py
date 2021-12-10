@@ -47,18 +47,11 @@ def konexioa_itxi():
 
 
 # "timer/segundoak" gaiari bidali mezu bat segundo bat pasatzen den bakoitzean
-# minutu bakoitzero mezu bat bidaltzen da "timer/minutuak" gaiari ere
 def mezuak_bidali():
     global denbora
 
     if bezeroa.is_connected():
         bezeroa.publish("timer/segundoak", denbora)
-
-        if denbora > 0 and denbora % 60 == 0:
-            if denbora == 60:
-                bezeroa.publish("timer/minutuak", "minutu bat")
-            else:
-                bezeroa.publish("timer/minutuak", str(int(denbora / 60)) + " minutu")
 
         denbora += 1
         time.sleep(1)
